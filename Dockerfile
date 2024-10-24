@@ -11,11 +11,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Start Generation Here
-RUN git clone https://github.com/kiyoungchoi/tgrad.git && \
-    cd tgrad && \
+RUN git clone https://www.github.com/kiyoungchoi/tgrad.git
+RUN cd tgrad && \
     pip install --no-cache-dir -r requirements.txt
 # End Generation Here
 
-# Python 패키지 설치
-# COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
