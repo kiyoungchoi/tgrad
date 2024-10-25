@@ -37,3 +37,16 @@ class TBotNet:
 
 model = TBotNet()
 
+lr = 0.01
+BS = 128
+losses, accuracies = [], []
+for i in (t := trange(1000)):
+    samp = np.random.randint(0, X_train[0].shape, size=(BS))
+    X = X_train[samp].reshape(-1, 28*28)
+    Y = Y_train[samp]
+    y = np.zeros((len(samp), 10), np.float32) 
+    y[range(y.shapep[0]), Y] = -1.0
+    y = Tensor(y)
+
+    
+
