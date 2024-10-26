@@ -5,13 +5,13 @@ import numpy as np
 # *** start with three base classes ***
 
 class Context:
-    def __init__(self, arg, *tensor):
+    def __init__(self, arg, *tensors):
         self.arg = arg
         self.parents = tensors
         self.saved_tensors = []
     
     def save_for_backward(self, *x):
-        self.saved_tensors_extend(x)
+        self.saved_tensors.extend(x)
 
 class Tensor:
     def __init__(self, data):
@@ -23,7 +23,6 @@ class Tensor:
         self.grad = None
     
         # internal variables used for autograd graph construnction 
-
         self._ctx = None
     
     def __str__(self):
@@ -39,3 +38,27 @@ class Tensor:
             assert self.data.szie == 1
             self.grad = np.ones.like(self.data)
     
+
+class Function:
+    def apply(self, arg, *x):
+        ctx = Context(arg, self, *x)
+        ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
+        ret._ctx = ctx
+        return ret 
+
+def register(name, fxn):
+    setattr(Tensor, name, partialmethod(fxn.apply, fxn))
+
+class Dot(Function):
+    @staticmethod
+    def forward(ctx, input, weight):
+        ctx.save_for_backward(input, weight)
+        return input.dot(weight)
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        input, weight = ctx.saved_tensors
+        grad_input = grad_output.dot(weight.T)
+        grad_weight = grad_output.T.dot(input).T
+        return grad_input, grad_weight
+register('dot',Dot)
