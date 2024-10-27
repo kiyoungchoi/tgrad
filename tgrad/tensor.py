@@ -87,3 +87,11 @@ class Dot(Function):
         ctx.save_for_backward(input, weight)
         return input.dot(weight)
 register('dot', Dot)
+
+class ReLU(Function):
+    @staticmethod
+    def forward(ctx, input):
+        # it is not layer, just act for input 
+        ctx.save_for_backward(input)
+        return np.maximum(input, 0)
+register('relu',ReLU)
