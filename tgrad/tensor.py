@@ -11,6 +11,13 @@ class Context:
         self.saved_tensors = []
     
     def save_for_backward(self, *x):
+        # # extend() 사용 예제
+        # list1 = [1, 2, 3]
+        # list2 = [4, 5, 6]
+
+        # # extend() 사용
+        # list1.extend(list2)
+        # print(list1)  # 출력: [1, 2, 3, 4, 5, 6]
         self.saved_tensors.extend(x)
 
 class Tensor:
@@ -39,12 +46,35 @@ class Tensor:
             self.grad = np.ones.like(self.data)
     
 
+# class Function:
+#     def apply(self, arg, *x):
+#         ctx = Context(arg, self, *x)
+#         ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
+#         ret._ctx = ctx
+#         return ret 
+
+# def register(name, fxn):
+#     setattr(Tensor, name, partialmethod(fxn.apply, fxn))
+
+# class Dot(Function):
+#     @staticmethod
+#     def forward(ctx, input, weight):
+#         ctx.save_for_backward(input, weight)
+#         return input.dot(weight)
+    
+#     @staticmethod
+#     def backward(ctx, grad_output):
+#         input, weight = ctx.saved_tensors
+#         grad_input = grad_output.dot(weight.T)
+#         grad_weight = grad_output.T.dot(input).T
+#         return grad_input, grad_weight
+# register('dot',Dot)
 class Function:
     def apply(self, arg, *x):
         ctx = Context(arg, self, *x)
         ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
         ret._ctx = ctx
-        return ret 
+        return ret
 
 def register(name, fxn):
     setattr(Tensor, name, partialmethod(fxn.apply, fxn))
@@ -52,13 +82,8 @@ def register(name, fxn):
 class Dot(Function):
     @staticmethod
     def forward(ctx, input, weight):
+        # input is with a lot of 0's
+        # weight is with random.uniform()
         ctx.save_for_backward(input, weight)
         return input.dot(weight)
-    
-    @staticmethod
-    def backward(ctx, grad_output):
-        input, weight = ctx.saved_tensors
-        grad_input = grad_output.dot(weight.T)
-        grad_weight = grad_output.T.dot(input).T
-        return grad_input, grad_weight
-register('dot',Dot)
+register('dot', Dot)
