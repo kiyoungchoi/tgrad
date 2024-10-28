@@ -95,3 +95,20 @@ class ReLU(Function):
         ctx.save_for_backward(input)
         return np.maximum(input, 0)
 register('relu',ReLU)
+
+class LogSoftmax(Function):
+    @staticmethod
+    def forward(ctx, input):
+        def logsumexp(x):
+            c = x.max(axis=1)
+            # 예시: 입력값이 [300, 200, 500]일 때
+            # 1. c = 500 (최대값)
+            # 2. x-c: [300-500, 200-500, 500-500] = [-200, -300, 0]
+            # 3. 이렇게 하는 이유는 지수 함수의 수치적 안정성을 위해서입니다
+            # 4. exp(-200) + exp(-300) + exp(0) 는 exp(300) + exp(200) + exp(500) 보다
+            #    오버플로우 위험이 훨씬 적습니다
+            return c + np.log(np.exp(x-c.reshape(-1,1)).sum(axis=1))
+        output = input - logsumexp(input).reshape(-1, 1)
+        ctx.save_for_backward(output)
+        return output 
+register('logsoftmax', LogSoftmax)
