@@ -112,3 +112,15 @@ class LogSoftmax(Function):
         ctx.save_for_backward(output)
         return output 
 register('logsoftmax', LogSoftmax)
+
+class Mul(Function):
+    @staticmethod
+    def forward(ctx, x, y):
+        ctx.save_for_backward(x, y)
+        return x*y
+    
+    def bakcward(ctx, grad_output):
+        x, y = ctx.saved_tensors
+        return y*grad_output, x*grad_output
+
+register('mul', Mul)
