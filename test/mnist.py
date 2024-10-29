@@ -40,21 +40,36 @@ model = TBotNet()
 lr = 0.01
 BS = 128
 losses, accuracies = [], []
-for i in (t := trange(1000)):
+for i in (t := trange(100)):
 
     #prepare data
     samp = np.random.randint(0, X_train.shape[0], size=(BS))
     x = Tensor(X_train[samp].reshape(-1, 28*28))
-    Y = Y_train[samp]
+    Y = Y_train[samp] # (128, 1)
     y = np.zeros((len(samp), 10), np.float32) 
-    y[range(y.shape[0]), Y] = -1.0
+    y[range(y.shape[0]), Y] = -1.0 # for NLL
     y = Tensor(y)
 
     # init network
     outs = model.forward(x)
 
     #NLL loss funciton 
-    # loss = outs.mul(y).mean()
+    # 간단한 설명:
+    # 1. outs는 모델의 예측값으로, 로그 소프트맥스를 통과한 값입니다
+    # 2. y는 실제 레이블을 -1.0으로 인코딩한 값입니다
+    # 3. mul()로 두 텐서를 곱하고 mean()으로 평균을 구해 최종 손실값을 계산합니다
+    # 실제 예시:
+    # 손실 계산 과정
+    # 1. outs * y 계산
+    # [[-2.3*0, -1.5*0, -0.1*(-1)],
+    #  [-1.8*(-1), -2.1*0, -0.4*0]]
+    # = [[0, 0, 0.1],
+    #    [1.8, 0, 0]]
+
+    # 2. 평균 계산
+    # (0 + 0 + 0.1 + 1.8 + 0 + 0) / 6 = 0.317
+    loss = outs.mul(y).mean()
+    exit(0)
     # print(loss)
     # loss.backward()
     
