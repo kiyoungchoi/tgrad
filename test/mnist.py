@@ -66,10 +66,18 @@ for i in (t := trange(100)):
     # = [[0, 0, 0.1],
     #    [1.8, 0, 0]]
 
+    # NLL loss function for training 
     # 2. 평균 계산
     # (0 + 0 + 0.1 + 1.8 + 0 + 0) / 6 = 0.317
     loss = outs.mul(y).mean()
     print(loss)
     # loss.backward()
+
+    # evaluation
+    cat = np.argmax(outs.data, axis=1)
+    accuracy = (cat == Y).mean()
+
+    print(accuracy)
     
+    # SGD
 

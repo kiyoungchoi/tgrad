@@ -59,7 +59,6 @@ class Tensor:
     
     def mean(self):
         print(self.data.shape)
-        exit(0)
         div = Tensor(np.array([1/self.data.size]))
         return self.sum().mul(div)
     
@@ -142,3 +141,15 @@ class Mul(Function):
         return y*grad_output, x*grad_output
 
 register('mul', Mul)
+
+class Sum(Function):
+    @staticmethod
+    def forward(ctx, input):
+        ctx.save_for_backward(input)
+        return np.array([input.sum()])
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        input, = ctx.saved_tensors
+        return grad_output * np.ones_like(input)
+register('sum', Sum)
