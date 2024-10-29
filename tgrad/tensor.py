@@ -44,6 +44,24 @@ class Tensor:
             # fill in the first grad with one
             assert self.data.szie == 1
             self.grad = np.ones.like(self.data)
+        
+        assert(self.grad is not None)
+
+        grads = self._ctx.arg.backward(self,_ctx, self.grad)
+        if len(self._ctx.parents) == 1:
+            grads = [grads]
+        for t, g in zip(self._ctx.parents, grads):
+            if g.shape != t.data.shape:
+                print("grad shape must match tensor shape in {se.f_ctx.arg}, {g.shape} != {t.data.shape}")
+                assert(False)
+            t.grad = g
+            t.backward(False)
+    
+    def mean(self):
+        print(self.data.shape)
+        exit(0)
+        div = Tensor(np.array([1/self.data.size]))
+        return self.sum().mul(div)
     
 
 # class Function:

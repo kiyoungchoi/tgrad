@@ -69,8 +69,7 @@ for i in (t := trange(100)):
     # 2. 평균 계산
     # (0 + 0 + 0.1 + 1.8 + 0 + 0) / 6 = 0.317
     loss = outs.mul(y).mean()
-    exit(0)
-    # print(loss)
+    print(loss)
     # loss.backward()
     
 
