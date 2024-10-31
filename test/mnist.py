@@ -37,10 +37,10 @@ class TBotNet:
 
 model = TBotNet()
 
-lr = 0.01
+lr = 0.001
 BS = 128
 losses, accuracies = [], []
-for i in (t := trange(100)):
+for i in (t := trange(500)):
 
     #prepare data
     samp = np.random.randint(0, X_train.shape[0], size=(BS))
@@ -70,14 +70,28 @@ for i in (t := trange(100)):
     # 2. 평균 계산
     # (0 + 0 + 0.1 + 1.8 + 0 + 0) / 6 = 0.317
     loss = outs.mul(y).mean()
-    print(loss)
     # loss.backward()
 
     # evaluation
     cat = np.argmax(outs.data, axis=1)
     accuracy = (cat == Y).mean()
 
-    print(accuracy)
-    
     # SGD
+    model.l1.data = model.l1.data - lr*model.l1.data
+    model.l2.data = model.l2.data - lr*model.l2.data
 
+    # printing
+    loss = loss.data
+    losses.append(loss)
+    accuracies.append(accuracy)
+    # t.set_description(f"loss: {losses}, accuracy: {accuracies}")
+
+def numpy_eval():
+  Y_test_preds_out = model.forward(Tensor(X_test.reshape(-1, 28*28)))
+  Y_test_preds = np.argmax(Y_test_preds_out.data, axis=1)
+  return (Y_test_preds == Y_test).mean()
+
+
+accuracy = numpy_eval()
+print(f"test set accuracy is {accuracy}")
+assert accuracy > 0.95
