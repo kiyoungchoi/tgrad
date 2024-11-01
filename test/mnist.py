@@ -70,15 +70,16 @@ for i in (t := trange(500)):
     # 2. 평균 계산
     # (0 + 0 + 0.1 + 1.8 + 0 + 0) / 6 = 0.317
     loss = outs.mul(y).mean()
-    # loss.backward()
+    loss.backward()
 
     # evaluation
     cat = np.argmax(outs.data, axis=1)
     accuracy = (cat == Y).mean()
 
     # SGD
-    model.l1.data = model.l1.data - lr*model.l1.data
-    model.l2.data = model.l2.data - lr*model.l2.data
+    print(model.l1.grad)
+    model.l1.data = model.l1.data - lr*model.l1.grad
+    model.l2.data = model.l2.data - lr*model.l2.grad
 
     # printing
     loss = loss.data

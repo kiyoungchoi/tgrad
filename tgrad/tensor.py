@@ -36,18 +36,18 @@ class Tensor:
         return f"Tensor {self.data} with grad {self.grad}"
     
     def backward(self, allow_fill=True):
-        print("running backward on {self}" )
+        print("running backward on", self)
         if self._ctx is None:
             return
         
         if self.grad is None and allow_fill:
             # fill in the first grad with one
-            assert self.data.szie == 1
-            self.grad = np.ones.like(self.data)
+            assert self.data.size == 1
+            self.grad = np.ones_like(self.data)
         
         assert(self.grad is not None)
 
-        grads = self._ctx.arg.backward(self,_ctx, self.grad)
+        grads = self._ctx.arg.backward(self._ctx, self.grad)
         if len(self._ctx.parents) == 1:
             grads = [grads]
         for t, g in zip(self._ctx.parents, grads):
@@ -102,6 +102,13 @@ class Dot(Function):
         # weight is with random.uniform()
         ctx.save_for_backward(input, weight)
         return input.dot(weight)
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        input, weight = ctx.saved_tensors
+        grad_input = grad_output.dot(weight.T)
+        grad_weight = grad_output.T.dot(input).T
+        return grad_input, grad_weight
 register('dot', Dot)
 
 class ReLU(Function):
@@ -110,6 +117,14 @@ class ReLU(Function):
         # it is not layer, just act for input 
         ctx.save_for_backward(input)
         return np.maximum(input, 0)
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        input, = ctx.saved_tensors
+        grad_input = grad_output.copy()
+        grad_input[input < 0] = 0
+        return grad_input
+
 register('relu',ReLU)
 
 class LogSoftmax(Function):
@@ -127,6 +142,12 @@ class LogSoftmax(Function):
         output = input - logsumexp(input).reshape(-1, 1)
         ctx.save_for_backward(output)
         return output 
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        output, = ctx.saved_tensors
+        return grad_output - np.exp(output)*grad_output.sum(axis=1).reshape(-1, 1)
+
 register('logsoftmax', LogSoftmax)
 
 class Mul(Function):
@@ -135,7 +156,7 @@ class Mul(Function):
         ctx.save_for_backward(x, y)
         return x*y
     
-    def bakcward(ctx, grad_output):
+    def backward(ctx, grad_output):
         x, y = ctx.saved_tensors
         return y*grad_output, x*grad_output
 
