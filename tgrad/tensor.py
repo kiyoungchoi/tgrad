@@ -36,6 +36,19 @@ class Tensor:
         return f"Tensor {self.data} with grad {self.grad}"
     
     def backward(self, allow_fill=True):
+        # # 텐서 생성 example
+        # a = Tensor(np.array([2.0]))
+        # b = Tensor(np.array([3.0]))
+
+        # # 연산 (덧셈)
+        # c = a + b  # 내부적으로 add 함수가 호출됨
+
+        # # 역전파 실행
+        # c.backward()
+
+        # print(a.grad)  # 출력: 1.0
+        # print(b.grad)  # 출력: 1.0
+
         print("running backward on", self)
         if self._ctx is None:
             return
@@ -163,6 +176,13 @@ class Mul(Function):
 register('mul', Mul)
 
 class Sum(Function):
+    # a = Tensor(np.array([2.0]))
+    # b = Tensor(np.array([3.0]))
+    # c = a.add(b)  # 덧셈 연산
+    # c.backward()
+
+    # print(a.grad)  # 출력: 1.0
+    # print(b.grad)  # 출력: 1.0
     @staticmethod
     def forward(ctx, input):
         ctx.save_for_backward(input)
