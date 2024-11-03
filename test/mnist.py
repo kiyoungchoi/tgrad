@@ -40,7 +40,7 @@ model = TBotNet()
 lr = 0.001
 BS = 128
 losses, accuracies = [], []
-for i in (t := trange(500)):
+for i in (t := trange(100)):
 
     #prepare data
     samp = np.random.randint(0, X_train.shape[0], size=(BS))
@@ -77,7 +77,7 @@ for i in (t := trange(500)):
     accuracy = (cat == Y).mean()
 
     # SGD
-    print(model.l1.grad)
+    # print(model.l1.grad)
     model.l1.data = model.l1.data - lr*model.l1.grad
     model.l2.data = model.l2.data - lr*model.l2.grad
 

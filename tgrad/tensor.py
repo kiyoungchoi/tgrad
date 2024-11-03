@@ -49,7 +49,7 @@ class Tensor:
         # print(a.grad)  # 출력: 1.0
         # print(b.grad)  # 출력: 1.0
 
-        print("running backward on", self)
+        # print("running backward on", self)
         if self._ctx is None:
             return
         
@@ -127,12 +127,14 @@ register('dot', Dot)
 class ReLU(Function):
     @staticmethod
     def forward(ctx, input):
+        # 순전파: 입력값을 저장하고 ReLU 연산 수행
         # it is not layer, just act for input 
         ctx.save_for_backward(input)
         return np.maximum(input, 0)
     
     @staticmethod
     def backward(ctx, grad_output):
+        # 역전파: 저장된 입력값을 사용하여 기울기 계산
         input, = ctx.saved_tensors
         grad_input = grad_output.copy()
         grad_input[input < 0] = 0
