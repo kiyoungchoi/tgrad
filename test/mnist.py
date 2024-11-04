@@ -35,6 +35,38 @@ class TBotNet:
     def forward(self, x):
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
 
+# test
+import torch
+
+class MyReLU(torch.autograd.Function):
+  @staticmethod
+  def forward(ctx, input):
+    ctx.save_for_backward(input)
+    return input.clamp(min=0)
+
+  @staticmethod
+  def backward(ctx, grad_output):
+    print(f"st: {ctx.saved_tensors}")
+    input, = ctx.saved_tensors
+    grad_input = grad_output.clone()
+    grad_input[input < 0] = 0
+    return grad_input
+
+t = [
+  torch.tensor([-1., 1], requires_grad=True),
+  torch.tensor([-2., 2], requires_grad=True)
+] 
+for i in t:
+  tr = MyReLU.apply(i)
+  print(tr)
+  print(tr.mean())
+  print(tr.mean().backward())
+
+
+exit(0)
+
+
+# original 
 model = TBotNet()
 
 lr = 0.001
