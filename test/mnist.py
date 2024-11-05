@@ -70,7 +70,7 @@ model = TBotNet()
 lr = 0.001
 BS = 128
 losses, accuracies = [], []
-for i in (t := trange(100)):
+for i in (t := trange(10)):
 
     #prepare data
     samp = np.random.randint(0, X_train.shape[0], size=(BS))

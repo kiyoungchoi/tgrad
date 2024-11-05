@@ -64,6 +64,7 @@ class Tensor:
         div = Tensor(np.array([1/self.data.size]))
         return self.sum().mul(div)
     
+# This Function is the Context
 class Function:
     def __init__(self, *tensors):
         self.parents = tensors
@@ -79,14 +80,21 @@ class Function:
         # print(list1)  # 출력: [1, 2, 3, 4, 5, 6]
         self.saved_tensors.extend(x)
 
+    # note that due to how partialmethod works, self and arg are switched
     def apply(self, arg, *x):
         print(self)
+        print(arg)
+        print(x)
+        exit(0)
         ctx = arg(self, *x)
         ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
         ret._ctx = ctx
         return ret
 
 def register(name, fxn):
+    print(fxn.apply)
+    print(fxn)
+    print("-----")
     setattr(Tensor, name, partialmethod(fxn.apply, fxn))
 
 class Dot(Function):
