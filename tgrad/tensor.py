@@ -2,24 +2,7 @@ from functools import partialmethod
 import numpy as np
 
 
-# *** start with three base classes ***
-
-class Context:
-    def __init__(self, arg, *tensors):
-        self.arg = arg
-        self.parents = tensors
-        self.saved_tensors = []
-    
-    def save_for_backward(self, *x):
-        # # extend() 사용 예제
-        # list1 = [1, 2, 3]
-        # list2 = [4, 5, 6]
-
-        # # extend() 사용
-        # list1.extend(list2)
-        # print(list1)  # 출력: [1, 2, 3, 4, 5, 6]
-        self.saved_tensors.extend(x)
-
+# *** start with two base classes ***
 class Tensor:
     def __init__(self, data):
         # print(data.shape, data)
@@ -67,12 +50,12 @@ class Tensor:
         
         assert(self.grad is not None)
 
-        grads = self._ctx.arg.backward(self._ctx, self.grad)
+        grads = self._ctx.backward(self._ctx, self.grad)
         if len(self._ctx.parents) == 1:
             grads = [grads]
         for t, g in zip(self._ctx.parents, grads):
             if g.shape != t.data.shape:
-                print("grad shape must match tensor shape in {se.f_ctx.arg}, {g.shape} != {t.data.shape}")
+                print("grad shape must match tensor shape in {se.f_ctx}, {g.shape} != {t.data.shape}")
                 assert(False)
             t.grad = g
             t.backward(False)
@@ -81,33 +64,24 @@ class Tensor:
         div = Tensor(np.array([1/self.data.size]))
         return self.sum().mul(div)
     
-
-# class Function:
-#     def apply(self, arg, *x):
-#         ctx = Context(arg, self, *x)
-#         ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
-#         ret._ctx = ctx
-#         return ret 
-
-# def register(name, fxn):
-#     setattr(Tensor, name, partialmethod(fxn.apply, fxn))
-
-# class Dot(Function):
-#     @staticmethod
-#     def forward(ctx, input, weight):
-#         ctx.save_for_backward(input, weight)
-#         return input.dot(weight)
-    
-#     @staticmethod
-#     def backward(ctx, grad_output):
-#         input, weight = ctx.saved_tensors
-#         grad_input = grad_output.dot(weight.T)
-#         grad_weight = grad_output.T.dot(input).T
-#         return grad_input, grad_weight
-# register('dot',Dot)
 class Function:
+    def __init__(self, *tensors):
+        self.parents = tensors
+        self.saved_tensors = []
+    
+    def save_for_backward(self, *x):
+        # # extend() 사용 예제
+        # list1 = [1, 2, 3]
+        # list2 = [4, 5, 6]
+
+        # # extend() 사용
+        # list1.extend(list2)
+        # print(list1)  # 출력: [1, 2, 3, 4, 5, 6]
+        self.saved_tensors.extend(x)
+
     def apply(self, arg, *x):
-        ctx = Context(arg, self, *x)
+        print(self)
+        ctx = arg(self, *x)
         ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
         ret._ctx = ctx
         return ret
@@ -178,6 +152,7 @@ class Mul(Function):
         ctx.save_for_backward(x, y)
         return x*y
     
+    @staticmethod
     def backward(ctx, grad_output):
         x, y = ctx.saved_tensors
         return y*grad_output, x*grad_output
