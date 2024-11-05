@@ -55,7 +55,14 @@ class Tensor:
         
         if self.grad is None and allow_fill:
             # fill in the first grad with one
+            # this is "implicit gradient creation"
+            
             assert self.data.size == 1
+            # 순전파 결과:
+            # [ 0.73245234 -1.52361438]
+
+            # 그래디언트 초기화:
+            # [[1. 1.]]
             self.grad = np.ones_like(self.data)
         
         assert(self.grad is not None)
