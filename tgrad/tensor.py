@@ -64,7 +64,7 @@ class Tensor:
         div = Tensor(np.array([1/self.data.size]))
         return self.sum().mul(div)
     
-# This Function is the Context
+# An instaniation of the Function is the Context
 class Function:
     def __init__(self, *tensors):
         self.parents = tensors
@@ -121,7 +121,6 @@ class ReLU(Function):
         grad_input = grad_output.copy()
         grad_input[input < 0] = 0
         return grad_input
-
 register('relu',ReLU)
 
 class LogSoftmax(Function):
