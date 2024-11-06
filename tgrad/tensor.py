@@ -82,19 +82,12 @@ class Function:
 
     # note that due to how partialmethod works, self and arg are switched
     def apply(self, arg, *x):
-        print(self)
-        print(arg)
-        print(x)
-        exit(0)
         ctx = arg(self, *x)
         ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
         ret._ctx = ctx
         return ret
 
 def register(name, fxn):
-    print(fxn.apply)
-    print(fxn)
-    print("-----")
     setattr(Tensor, name, partialmethod(fxn.apply, fxn))
 
 class Dot(Function):
