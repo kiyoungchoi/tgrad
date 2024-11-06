@@ -63,11 +63,16 @@ class TBotNet:
 #   print(tr, i.grad)
 # exit(0)
 
+def SGD:
+  def __init__(self, tensors, lr=0.001):
+    self.tensors = tensors
+    self.lr = lr
+    
 
 # original 
 model = TBotNet()
+optim = SGD([model.l1, model.l2], 0.001)
 
-lr = 0.001
 BS = 128
 losses, accuracies = [], []
 for i in (t := trange(10)):
