@@ -63,10 +63,18 @@ class TBotNet:
 #   print(tr, i.grad)
 # exit(0)
 
-def SGD:
+class SGD:
   def __init__(self, tensors, lr=0.001):
     self.tensors = tensors
     self.lr = lr
+    # model.l1.data = model.l1.data - lr*model.l1.grad
+    # model.l2.data = model.l2.data - lr*model.l2.grad
+    # self.tensors.data = self.tensors.data - lr*self.tensors.grad
+    # self.tensors.data = self.tensors.data - lr*self.tensors.grad
+
+  def step(self):
+    for t in self.tensors:
+      t.data -= self.lr * t.grad
     
 
 # original 
@@ -75,7 +83,7 @@ optim = SGD([model.l1, model.l2], 0.001)
 
 BS = 128
 losses, accuracies = [], []
-for i in (t := trange(10)):
+for i in (t := trange(100)):
 
     #prepare data
     samp = np.random.randint(0, X_train.shape[0], size=(BS))
@@ -113,8 +121,11 @@ for i in (t := trange(10)):
 
     # SGD
     # print(model.l1.grad)
-    model.l1.data = model.l1.data - lr*model.l1.grad
-    model.l2.data = model.l2.data - lr*model.l2.grad
+    # lr = 0.001
+    # model.l1.data = model.l1.data - lr*model.l1.grad
+    # model.l2.data = model.l2.data - lr*model.l2.grad
+    optim.step()
+    
 
     # printing
     loss = loss.data
