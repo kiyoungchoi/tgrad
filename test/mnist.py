@@ -1,28 +1,16 @@
 #! /usr/bin/env python 
 from tgrad.tensor import Tensor
+from tgrad.utils import fetch_mnist
+# from tgrad.nn import SGD, layer_init
+import tgrad.optim as optim
 import numpy as np
 from tqdm import trange 
 # load the mnist dataset
 
-def fetch(url):
-  import requests, gzip, os, hashlib, numpy
-  fp = os.path.join('/tmp', hashlib.md5(url.encode('utf-8')).hexdigest())
-  if os.path.isfile(fp):
-    with open(fp, 'rb') as f:
-      dat = f.read()
-  else:
-    with open(fp, 'wb') as f:
-      dat = requests.get(url).content
-      f.write(dat)
-  return numpy.frombuffer(gzip.decompress(dat), dtype='uint8').copy()
 
-X_train = fetch("https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz")[0x10:].reshape((-1, 28, 28))
-Y_train = fetch("https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz")[8:]
-X_test = fetch("https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz")[0x10:].reshape((-1, 28, 28))
-Y_test = fetch("https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz")[8:]
+X_train, Y_train, X_test, Y_test = fetch_mnist()
 
 #train a model
-
 def layer_init(m, h):
     ret = np.random.uniform(-1, 1, size= (m, h))/np.sqrt(m*h)
     return ret.astype(np.float32)
@@ -63,23 +51,9 @@ class TBotNet:
 #   print(tr, i.grad)
 # exit(0)
 
-class SGD:
-  def __init__(self, tensors, lr=0.001):
-    self.tensors = tensors
-    self.lr = lr
-    # model.l1.data = model.l1.data - lr*model.l1.grad
-    # model.l2.data = model.l2.data - lr*model.l2.grad
-    # self.tensors.data = self.tensors.data - lr*self.tensors.grad
-    # self.tensors.data = self.tensors.data - lr*self.tensors.grad
-
-  def step(self):
-    for t in self.tensors:
-      t.data -= self.lr * t.grad
-    
-
 # original 
 model = TBotNet()
-optim = SGD([model.l1, model.l2], 0.001)
+optim = optim.SGD([model.l1, model.l2], 0.001)
 
 BS = 128
 losses, accuracies = [], []
