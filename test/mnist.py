@@ -53,7 +53,8 @@ class TBotNet:
 
 # original 
 model = TBotNet()
-optim = optim.SGD([model.l1, model.l2], 0.001)
+# optim = optim.SGD([model.l1, model.l2], 0.001)
+optim = optim.Adam([model.l1, model.l2], 0.001)
 
 BS = 128
 losses, accuracies = [], []
