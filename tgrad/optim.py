@@ -32,6 +32,7 @@ class Adam(Optimizer):
       self.t +=  1
       self.m[i] = self.b1 * self.m[i] + (1 - self.b1) * t.grad
       self.v[i] = self.b2 * self.v[i] + (1 - self.b2) * np.square(t.grad)
+      # more Readability in tgrad vs more fast in pytorch
       mhat = self.m[i] / (1. - self.b1**self.t)
       vhat = self.v[i] / (1. - self.b2**self.t)
       t.data -= (self.lr * mhat)/(np.sqrt(vhat) + self.eps)
