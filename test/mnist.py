@@ -11,6 +11,7 @@ from tqdm import trange
 X_train, Y_train, X_test, Y_test = fetch_mnist()
 
 #train a model
+np.random.seed(1337)
 def layer_init(m, h):
     ret = np.random.uniform(-1, 1, size= (m, h))/np.sqrt(m*h)
     return ret.astype(np.float32)
@@ -53,19 +54,20 @@ class TBotNet:
 
 # original 
 model = TBotNet()
-# optim = optim.SGD([model.l1, model.l2], 0.001)
-optim = optim.Adam([model.l1, model.l2], 0.001)
+optim = optim.SGD([model.l1, model.l2], 0.001)
+# optim = optim.Adam([model.l1, model.l2], 0.001)
 
 BS = 128
 losses, accuracies = [], []
-for i in (t := trange(100)):
+for i in (t := trange(500)):
 
     #prepare data
     samp = np.random.randint(0, X_train.shape[0], size=(BS))
     x = Tensor(X_train[samp].reshape(-1, 28*28))
     Y = Y_train[samp] # (128, 1)
     y = np.zeros((len(samp), 10), np.float32) 
-    y[range(y.shape[0]), Y] = -1.0 # for NLL
+    # y[range(y.shape[0]), Y] = -1.0 # for NLL
+    y[range(y.shape[0]), Y] = -10.0 # correct loss for NLL, torch NLL loss returns one per row
     y = Tensor(y)
 
     # init network
