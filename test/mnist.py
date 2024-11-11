@@ -12,9 +12,10 @@ X_train, Y_train, X_test, Y_test = fetch_mnist()
 
 #train a model
 np.random.seed(1337)
-def layer_init(m, h):
-    ret = np.random.uniform(-1, 1, size= (m, h))/np.sqrt(m*h)
-    return ret.astype(np.float32)
+layer_init = lambda m, h: np.random.uniform(-1, 1, size= (m, h))/np.sqrt(m*h).astype(np.float32)
+# def layer_init(m, h):
+#     ret = np.random.uniform(-1, 1, size= (m, h))/np.sqrt(m*h)
+#     return ret.astype(np.float32)
 
 class TBotNet:
     def __init__(self):
