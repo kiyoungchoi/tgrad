@@ -68,16 +68,16 @@ for i in (t := trange(500)):
     y = Tensor(y)
 
     # init network
-    outs = model.forward(x)
+    out = model.forward(x)
 
     #NLL loss funciton 
     # 간단한 설명:
-    # 1. outs는 모델의 예측값으로, 로그 소프트맥스를 통과한 값입니다
+    # 1. out는 모델의 예측값으로, 로그 소프트맥스를 통과한 값입니다
     # 2. y는 실제 레이블을 -1.0으로 인코딩한 값입니다
     # 3. mul()로 두 텐서를 곱하고 mean()으로 평균을 구해 최종 손실값을 계산합니다
     # 실제 예시:
     # 손실 계산 과정
-    # 1. outs * y 계산
+    # 1. out * y 계산
     # [[-2.3*0, -1.5*0, -0.1*(-1)],
     #  [-1.8*(-1), -2.1*0, -0.4*0]]
     # = [[0, 0, 0.1],
@@ -86,11 +86,11 @@ for i in (t := trange(500)):
     # NLL loss function for training 
     # 2. 평균 계산
     # (0 + 0 + 0.1 + 1.8 + 0 + 0) / 6 = 0.317
-    loss = outs.mul(y).mean()
+    loss = out.mul(y).mean()
     loss.backward()
 
     # evaluation
-    cat = np.argmax(outs.data, axis=1)
+    cat = np.argmax(out.data, axis=1)
     accuracy = (cat == Y).mean()
 
     # SGD
