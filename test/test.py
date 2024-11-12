@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from tinygrad.tensor import Tensor
+from tgrad.tensor import Tensor
 
 x_init = np.random.randn(1,3).astype(np.float32)
 W_init = np.random.randn(3,3).astype(np.float32)
@@ -11,25 +11,23 @@ def test_tgrad():
     W = Tensor(W_init)
     m = Tensor(m_init)
     out = x.dot(W)
-    outr = out.relu()
-    outl = outr.logsoftmax()
-    outm = outl.mul(m)
-    outa = outm.add(m)
-    outx = outa.sum()
-    outx.backward()
-    return outx.data, x.grad, W.grad
+    out = out.relu()
+    out = out.logsoftmax()
+    out = out.mul(m)
+    out = out.add(m)
+    out = out.sum()
+    out.backward()
+    return out.data, x.grad, W.grad
 
 def test_pytorch():
     x = torch.tensor(x_init, requires_grad=True)
     W = torch.tensor(W_init, requires_grad=True)
     m = torch.tensor(m_init)
     out = x.matmul(W)
-    outr = out.relu()
-    outl = torch.nn.functional.log_softmax(outr, dim=1)
-    outm = outl.mul(m)
-    outa = outm.add(m)
-    outx = outa.sum()
-    outx.backward()
+    out = out.relu()
+    out = torch.nn.functional.log_softmax(out, dim=1)
+    out = out.mul(m).add(m).sum()
+    out.backward()
     return outx.detach().numpy(), x.grad, W.grad
 
 for x, y in zip(test_tgrad(), test_pytorch()):
