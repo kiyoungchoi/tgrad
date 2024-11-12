@@ -15,7 +15,7 @@ class Tensor:
         # internal variables used for autograd graph construnction 
         self._ctx = None
     
-    def __str__(self):
+    def __repr__(self):
         return f"Tensor {self.data} with grad {self.grad}"
     
     def backward(self, allow_fill=True):
