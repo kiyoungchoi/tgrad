@@ -177,3 +177,14 @@ class Sum(Function):
         input, = ctx.saved_tensors
         return grad_output * np.ones_like(input)
 register('sum', Sum)
+
+
+class Add(Function):
+    @staticmethod
+    def forward(ctx, x, y):
+        return x+y
+
+    @staticmethod 
+    def backward(ctx, grad_output):
+        return grad_output, grad_output
+register('add', Add)
