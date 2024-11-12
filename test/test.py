@@ -28,7 +28,7 @@ def test_pytorch():
     out = torch.nn.functional.log_softmax(out, dim=1)
     out = out.mul(m).add(m).sum()
     out.backward()
-    return outx.detach().numpy(), x.grad, W.grad
+    return out.detach().numpy(), x.grad, W.grad
 
 for x, y in zip(test_tgrad(), test_pytorch()):
     print(x, y)
