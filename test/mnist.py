@@ -1,7 +1,6 @@
 #! /usr/bin/env python 
 from tgrad.tensor import Tensor
-from tgrad.utils import fetch_mnist
-# from tgrad.nn import SGD, layer_init
+from tgrad.utils import fetch_mnist, layer_init_uniform
 import tgrad.optim as optim
 import numpy as np
 from tqdm import trange 
@@ -12,15 +11,12 @@ X_train, Y_train, X_test, Y_test = fetch_mnist()
 
 #train a model
 np.random.seed(1337)
-layer_init = lambda m, h: np.random.uniform(-1, 1, size= (m, h))/np.sqrt(m*h).astype(np.float32)
-# def layer_init(m, h):
-#     ret = np.random.uniform(-1, 1, size= (m, h))/np.sqrt(m*h)
-#     return ret.astype(np.float32)
+# layer_init = lambda m, h: np.random.uniform(-1, 1, size= (m, h))/np.sqrt(m*h).astype(np.float32)
 
 class TBotNet:
     def __init__(self):
-        self.l1 = Tensor(layer_init(784, 128))
-        self.l2 = Tensor(layer_init(128, 10))
+        self.l1 = Tensor(layer_init_uniform(784, 128))
+        self.l2 = Tensor(layer_init_uniform(128, 10))
 
     def forward(self, x):
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()

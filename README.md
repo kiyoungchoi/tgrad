@@ -8,11 +8,12 @@ understanding the process
 ```python
 from tgrad.tensor import Tensor
 import tgrad.optim as optim
+from tgrad.untils import layer_init_uniform
 
 class TBotNet:
     def __init__(self):
-        self.l1 = Tensor(layer_init(784, 128))
-        self.l2 = Tensor(layer_init(128, 10))
+        self.l1 = Tensor(layer_init_uniform(784, 128))
+        self.l2 = Tensor(layer_init_uniform(128, 10))
 
     def forward(self, x):
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
