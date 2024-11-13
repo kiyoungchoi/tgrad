@@ -56,7 +56,7 @@ optim = optim.SGD([model.l1, model.l2], 0.001)
 
 BS = 128
 losses, accuracies = [], []
-for i in (t := trange(500)):
+for i in (t := trange(200)):
 
     #prepare data
     samp = np.random.randint(0, X_train.shape[0], size=(BS))

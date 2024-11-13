@@ -82,8 +82,19 @@ class Function:
 
     # note that due to how partialmethod works, self and arg are switched
     def apply(self, arg, *x):
-        ctx = arg(self, *x)
-        ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
+        # ctx = arg(self, *x)
+        # ret = Tensor(arg.forward(ctx, self.data, *[t.data for t in x]))
+        # ret._ctx = ctx
+        # return ret
+        # print(type(arg) == Tensor) # to test
+        if type(arg) == Tensor:
+            op = self
+            x = [arg]+list(x)
+        else: 
+            op = arg
+            x = [self] + list(x)
+        ctx = op(*x)
+        ret = Tensor(op.forward(ctx, *[t.data for t in x]))
         ret._ctx = ctx
         return ret
 
@@ -188,3 +199,23 @@ class Add(Function):
     def backward(ctx, grad_output):
         return grad_output, grad_output
 register('add', Add)
+
+class Conv2D(Function):
+    @staticmethod
+    def forward(ctx, x, w):
+        cout, cin, H, W = w.shape
+        ret = np.zeros((x.shape[0], cout, x.shape[2]-(H-1), x.shape[3]-(W-1)), dtype=w.dtype)
+        for Y in range(ret.shape[2]):
+            for X in range(ret.shape[3]):
+                for j in range(H):
+                    for i in range(W):
+                        for c in range(cout):
+                            tx = x[:, :, Y+j, X+i]
+                            tw = w[c, :, j, i]
+                            ret[:, c, Y, X] += tx.dot(tw.reshape(-1, 1)).reshape(-1)
+        return ret
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        raise Exception("please write backward pass for Conv2D")
+register('conv2d', Conv2D)
