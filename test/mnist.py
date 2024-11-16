@@ -21,6 +21,21 @@ class TBotNet:
     def forward(self, x):
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
 
+class TConvNet:
+    def __init__(self):
+        self.chans = 4 # characteristics
+        # (batch_size, cin, H, W) => input 
+        # (cout, cin, H, W) => self.c1
+        self.c1 = Tensor(layer_init_uniform(self.chans, 1, 3, 3)) # filter
+        # (bs, cout, H, W)
+        self.l1 = Tensor(layer_init_uniform(26*26*self.chans, 128)) # serialize
+        self.l2 = Tensor(layer_init_uniform(128, 10))
+
+
+    def forward(self, x):
+        x.data = x.data.reshape((-1, 1, 28, 28))
+        x = x.conv2d(self.c1).reshape(Tensor(np.array(-1, 26*26*self.chans))).relu()
+        return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
 # # test
 # import torch
 
