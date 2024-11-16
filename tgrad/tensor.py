@@ -54,6 +54,8 @@ class Tensor:
         if len(self._ctx.parents) == 1:
             grads = [grads]
         for t, g in zip(self._ctx.parents, grads):
+            if g is None:
+                continue
             if g.shape != t.data.shape:
                 print("grad shape must match tensor shape in {se.f_ctx}, {g.shape} != {t.data.shape}")
                 assert(False)
@@ -231,3 +233,15 @@ class Conv2D(Function):
                         dw[:, :, j, i] += gg.T.dot(tx)
         return dx, dw
 register('conv2d', Conv2D)
+
+class Reshape(Function):
+    @staticmethod
+    def forward(ctx, x, shape):
+        ctx.save_for_backward(x.shape)
+        return x.reshape(shape)
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        in_shape,  = ctx.saved_tensors
+        return grad_output.reshape(in_shape), None 
+register('reshape', Reshape)
