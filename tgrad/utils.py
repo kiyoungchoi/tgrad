@@ -1,7 +1,7 @@
 import numpy as np
 
 def layer_init_uniform(*x):
-    ret = np.random.uniform(-1, 1, size=m)/np.sqrt(np.prod(x))
+    ret = np.random.uniform(-1, 1, size=x)/np.sqrt(np.prod(x))
     return ret.astype(np.float32)
 
 def fetch_mnist():
