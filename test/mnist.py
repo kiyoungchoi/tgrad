@@ -1,4 +1,5 @@
 #! /usr/bin/env python 
+import os 
 from tgrad.tensor import Tensor
 from tgrad.utils import fetch_mnist, layer_init_uniform
 import tgrad.optim as optim
@@ -34,48 +35,30 @@ class TConvNet:
 
     def forward(self, x):
         x.data = x.data.reshape((-1, 1, 28, 28))
-        x = x.conv2d(self.c1).reshape(Tensor(np.array(-1, 26*26*self.chans))).relu()
+        x = x.conv2d(self.c1).reshape(Tensor(np.array((-1, 26*26*self.chans)))).relu()
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
-# # test
-# import torch
 
-# class MyReLU(torch.autograd.Function):
-#   @staticmethod
-#   def forward(ctx, input):
-#     ctx.save_for_backward(input)
-#     return input.clamp(min=0)
-
-#   @staticmethod
-#   def backward(ctx, grad_output):
-#     print(ctx)
-#     print(f"saved_tensors: {ctx.saved_tensors}")
-#     input, = ctx.saved_tensors
-#     grad_input = grad_output.clone()
-#     grad_input[input < 0] = 0
-#     return grad_input
-
-# t = [
-#   torch.tensor([-1., 1], requires_grad=True),
-#   torch.tensor([-2., 2], requires_grad=True)
-# ] 
-# for i in t:
-#   tr = MyReLU.apply(i)
-#   tr.mean().backward()
-#   print(tr, i.grad)
-# exit(0)
+if os.getenv("CONV") == "1":
+    model = TConvNet()
+    optim = optim.Adam([model.c1, model.l1, model.l2], lr=0.001)
+    step = 400
+else:
+    model = TBotNet()
+    optim = optim.Adam([model.l1, model.l2], lr=0.001)
+    step = 1000
 
 # original 
-model = TBotNet()
-optim = optim.SGD([model.l1, model.l2], 0.001)
+# model = TBotNet()
+# optim = optim.SGD([model.l1, model.l2], 0.001)
 # optim = optim.Adam([model.l1, model.l2], 0.001)
 
 BS = 128
 losses, accuracies = [], []
-for i in (t := trange(200)):
+for i in (t := trange(step)):
 
     #prepare data
     samp = np.random.randint(0, X_train.shape[0], size=(BS))
-    x = Tensor(X_train[samp].reshape(-1, 28*28))
+    x = Tensor(X_train[samp].reshape(-1, 28*28).astype(np.float32))
     Y = Y_train[samp] # (128, 1)
     y = np.zeros((len(samp), 10), np.float32) 
     # y[range(y.shape[0]), Y] = -1.0 # for NLL
