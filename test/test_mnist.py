@@ -175,7 +175,8 @@ class TestMNIST(unittest.TestCase):
             # t.set_description(f"loss: {losses}, accuracy: {accuracies}")
         
         def numpy_eval():
-            Y_test_preds_out = model.forward(Tensor(X_test.reshape(-1, 28*28)))
+            # Y_test_preds_out = model.forward(Tensor(X_test.reshape(-1, 28*28)))
+            Y_test_preds_out = model.forward(Tensor(X_test.reshape((-1, 28*28)).astype(np.float32)))
             Y_test_preds = np.argmax(Y_test_preds_out.data, axis=1)
             return (Y_test_preds == Y_test).mean()
 
