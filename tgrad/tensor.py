@@ -204,68 +204,55 @@ class Add(Function):
         return grad_output, grad_output
 register('add', Add)
 
-from numba import jit, float32
+# from numba import jit, float32
+# optional jit
+try:
+  from numba import jit
+except ImportError:
+  jit = lambda x: x
 
-@jit(nopython=True)
-def conv2d_inner_forward(x, w):
-    cout, cin, H, W = w.shape
-    ret = np.zeros((x.shape[0], cout, x.shape[2]-(H-1), x.shape[3]-(W-1)), dtype=w.dtype)
-    for j in range(H):
-        for i in range(W):
-            tw = w[:, :, j, i] # 차원 축소됨, (1, 2)
-            for Y in range(ret.shape[2]):
-                for X in range(ret.shape[3]):
-                    ret[:, :, Y, X] += x[:, :, Y+j, X+i].dot(tw.T)
-    return ret
 
-@jit(nopython=True)
-def conv2d_inner_backward(grad_output, x, w):
-    dx = np.zeros_like(x) # format 
-    dw = np.zeros_like(w) # format
-    cout, cin, H, W = w.shape  #filter
-    for j in range(H):
-        for i in range(W):
-            tw = w[:, :, j, i]
-            for Y in range(grad_output.shape[2]):
-                for X in range(grad_output.shape[3]):
-                    gg = grad_output[:, :, Y, X]
-                    tx = x[:, :, Y, X]
-                    dx[:, :, Y+j, X+j] += gg.dot(tw)
-                    dw[:, :, j, i] += gg.T.dot(tx)
-    return dx, dw
+
 
 class Conv2D(Function):
     @staticmethod
+    @jit
+    def inner_forward(x, w):
+        cout, cin, H, W = w.shape
+        ret = np.zeros((x.shape[0], cout, x.shape[2]-(H-1), x.shape[3]-(W-1)), dtype=w.dtype)
+        for j in range(H):
+            for i in range(W):
+                tw = w[:, :, j, i] # 차원 축소됨, (1, 2)
+                for Y in range(ret.shape[2]):
+                    for X in range(ret.shape[3]):
+                        ret[:, :, Y, X] += x[:, :, Y+j, X+i].dot(tw.T)
+        return ret
+
+    @staticmethod
+    @jit
+    def inner_backward(grad_output, x, w):
+        dx = np.zeros_like(x) # format 
+        dw = np.zeros_like(w) # format
+        cout, cin, H, W = w.shape  #filter
+        for j in range(H):
+            for i in range(W):
+                tw = w[:, :, j, i]
+                for Y in range(grad_output.shape[2]):
+                    for X in range(grad_output.shape[3]):
+                        gg = grad_output[:, :, Y, X]
+                        tx = x[:, :, Y, X]
+                        dx[:, :, Y+j, X+j] += gg.dot(tw)
+                        dw[:, :, j, i] += gg.T.dot(tx)
+        return dx, dw
+
+    @staticmethod
     def forward(ctx, x, w):
         ctx.save_for_backward(x, w)
-        # cout, cin, H, W = w.shape
-        # ret = np.zeros((x.shape[0], cout, x.shape[2]-(H-1), x.shape[3]-(W-1)), dtype=w.dtype)
-        # for j in range(H):
-        #     for i in range(W):
-        #         tw = w[:, :, j, i]
-        #         for Y in range(ret.shape[2]):
-        #             for X in range(ret.shape[3]):
-        #                 ret[:, :, Y, X] += x[:, :, Y+j, X+i].dot(tw.T)
-        # return ret
-        return conv2d_inner_forward(x, w)
-    
+        return Conv2D.inner_forward(x, w)
     @staticmethod
     def backward(ctx, grad_output):
-        # x, w = ctx.saved_tensors
-        # dx = np.zeros_like(x)
-        # dw = np.zeros_like(w)
-        # cout, cin, H, W = w.shape
-        # for j in range(H):
-        #     for i in range(W):
-        #         tw = w[:, :, j, i]
-        #         for Y in range(grad_output.shape[2]):
-        #             for X in range(grad_output.shape[3]):
-        #                 gg = grad_output[:, :, Y, X]
-        #                 tx = x[:, :, Y+j, X+i]
-        #                 dx[:, :, Y+j, X+i] += gg.dot(tw)
-        #                 dw[:, :, j, i] += gg.T.dot(tx)
-        # return dx, dw
-        return conv2d_inner_backward(grad_output, *ctx.saved_tensors)
+        return Conv2D.inner_backward(grad_output, *ctx.saved_tensors)
+
 register('conv2d', Conv2D)
 
 class Reshape(Function):
