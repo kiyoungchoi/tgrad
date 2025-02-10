@@ -28,3 +28,9 @@ loss.backward()
 optim.step() 
 
 ```
+
+### 학습 진행사항
+
+
+## 📑 [학습 진행사항 완료 리스트](https://github.com/tinygrad/tinygrad/commits/master/?since=2020-10-19&until=2020-10-30&after=910ae260cd1d45a1326299081e6cc70832cfd21f+69) 
+- [extracting jacobian and test_jacobian](https://github.com/tinygrad/tinygrad/commit/1561d3b9c01675f70a37e2b39674465158fb5abd)
