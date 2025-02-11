@@ -1,5 +1,10 @@
 tinygrad to tgrad 
 
+### how to get started ( with setup.py )
+```
+pip install -e .
+```
+
 understanding the process 
 
 
