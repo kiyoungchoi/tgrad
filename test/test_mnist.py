@@ -1,6 +1,9 @@
 #! /usr/bin/env python 
 import os 
 import unittest
+import pdb
+import logging
+import sys
 from tgrad.tensor import Tensor
 from tgrad.utils import fetch_mnist, layer_init_uniform
 import tgrad.optim as tgrad_optim 
@@ -10,6 +13,7 @@ from tqdm import trange
 
 
 X_train, Y_train, X_test, Y_test = fetch_mnist()
+# (60000, 28, 28) (60000,) (10000, 28, 28) (10000,)
 
 #train a model
 np.random.seed(1337)
@@ -20,7 +24,7 @@ class TBotNet:
         self.l1 = Tensor(layer_init_uniform(784, 128))
         self.l2 = Tensor(layer_init_uniform(128, 10))
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
 
 class TConvNet:
@@ -34,7 +38,7 @@ class TConvNet:
         self.l2 = Tensor(layer_init_uniform(128, 10))
 
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         x.data = x.data.reshape((-1, 1, 28, 28))
         x = x.conv2d(self.c1).reshape(Tensor(np.array((-1, 26*26*self.chans)))).relu()
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
@@ -108,6 +112,18 @@ class TConvNet:
 
 class TestMNIST(unittest.TestCase):
     def test_mnist(self):
+        # 로깅 설정
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
+        logger = logging.getLogger(__name__)
+
+        if os.getenv("TRACE") == "1":
+            sys.settrace(trace_calls)
+
+        if os.getenv("DEBUG") == "1":
+            pdb.set_trace()  # 디버깅 포인트 설정
         if os.getenv("CONV") == "1":
             model = TConvNet()
             optim = tgrad_optim.Adam([model.c1, model.l1, model.l2], lr=0.001)
@@ -173,6 +189,11 @@ class TestMNIST(unittest.TestCase):
             losses.append(loss)
             accuracies.append(accuracy)
             # t.set_description(f"loss: {losses}, accuracy: {accuracies}")
+
+            # 학습 과정 로깅
+            if i % 100 == 0:
+                logger.debug(f"Step {i}: Loss = {float(loss):.4f}, Accuracy = {float(accuracy):.4f}")
+                logger.debug(f"Gradients - l1: {float(model.l1.grad.mean()):.4f}, l2: {float(model.l2.grad.mean()):.4f}")
         
         def numpy_eval():
             # Y_test_preds_out = model.forward(Tensor(X_test.reshape(-1, 28*28)))
@@ -185,4 +206,11 @@ class TestMNIST(unittest.TestCase):
         assert accuracy > 0.95
 
 if __name__ == '__main__':
+    # for test beginner
+    # print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
+    # model = TBotNet()
+    # optim = optim.Adam([model.l1, model.l2], 0.001)
+
+
+    # original 
     unittest.main()
