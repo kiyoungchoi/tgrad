@@ -11,7 +11,8 @@ class Tensor:
             print(f"error constructing tensor with {data} ")
             assert False
         if data.dtype == np.float64:
-            print(f"are you sure you want float64 in {data}?")
+            # print(f"are you sure you want float64 in {data}?")
+            pass
         self.data: np.ndarray = data
         self.grad: Optional[np.ndarray] = None
     
