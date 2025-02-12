@@ -212,53 +212,69 @@ class Add(Function):
 register('add', Add)
 
 # from numba import jit, float32
-# optional jit
-try:
-  from numba import jit
-except ImportError:
-  jit = lambda x: x
-
-
-
 
 class Conv2D(Function):
     @staticmethod
-    @jit
-    def inner_forward(x: np.ndarray, w: np.ndarray) -> np.ndarray:
-        cout, cin, H, W = w.shape
+    def forward(ctx:Function, x:np.ndarray, w: np.ndarray) -> np.ndarray:
+        # print(x.shape, 'x.shape')  # 입력 텐서 형태 디버깅
+        # print(w.shape, 'w.shape')  # 커널 형태 디버깅
+        # exit(0)  # 여기서 프로그램 종료 (현재 구현이 미완성임을 알림)
+        
+        ctx.save_for_backward(x, w)  # 역전파를 위해 입력 저장
+        cout, cin, H, W = w.shape  # 커널 형태 해체 [출력채널, 입력채널, 높이, 너비]
+        
+        # 출력 텐서 초기화 (NCHW 형식)
         ret = np.zeros((x.shape[0], cout, x.shape[2]-(H-1), x.shape[3]-(W-1)), dtype=w.dtype)
-        for j in range(H):
-            for i in range(W):
-                tw = w[:, :, j, i] # 차원 축소됨, (1, 2)
-                for Y in range(ret.shape[2]):
-                    for X in range(ret.shape[3]):
-                        ret[:, :, Y, X] += x[:, :, Y+j, X+i].dot(tw.T)
+        
+        # 커널 재구성 [출력채널, 입력채널*H*W] 형태로 평탄화 후 전치
+        tw = w.reshape(w.shape[0], -1).T
+        
+        # 출력 공간 순회 (높이와 너비 방향)
+        for Y in range(ret.shape[2]):  # 출력 높이
+            for X in range(ret.shape[3]):  # 출력 너비
+                # 입력에서 커널 크기 영역 추출 (NCHW 형식 유지)
+                tx = x[:, :, Y:Y+H, X:X+W].reshape(x.shape[0], -1)
+                ret[:, :, Y, X] = tx.dot(tw)
+        # for j in range(H):
+        #     for i in range(W):
+        #         tw = w[:, :, j, i] # 차원 축소됨, (1, 2)
+        #         for Y in range(ret.shape[2]):
+        #             for X in range(ret.shape[3]):
+        #                 ret[:, :, Y, X] += x[:, :, Y+j, X+i].dot(tw.T)
         return ret
 
     @staticmethod
-    @jit
-    def inner_backward(grad_output: np.ndarray, x: np.ndarray, w: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        dx = np.zeros_like(x) # format 
-        dw = np.zeros_like(w) # format
+    def backward(ctx: Function, grad_output: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        # dx = np.zeros_like(x) # format 
+        # dw = np.zeros_like(w) # format
+        x, w = ctx.saved_tensors
         cout, cin, H, W = w.shape  #filter
-        for j in range(H):
-            for i in range(W):
-                tw = w[:, :, j, i]
-                for Y in range(grad_output.shape[2]):
-                    for X in range(grad_output.shape[3]):
-                        gg = grad_output[:, :, Y, X]
-                        tx = x[:, :, Y, X]
-                        dx[:, :, Y+j, X+j] += gg.dot(tw)
-                        dw[:, :, j, i] += gg.T.dot(tx)
+        # for j in range(H):
+        #     for i in range(W):
+        #         tw = w[:, :, j, i]
+        #         for Y in range(grad_output.shape[2]):
+        #             for X in range(grad_output.shape[3]):
+        #                 gg = grad_output[:, :, Y, X]
+        #                 tx = x[:, :, Y, X]
+        #                 dx[:, :, Y+j, X+j] += gg.dot(tw)
+        #                 dw[:, :, j, i] += gg.T.dot(tx)
+        dx, dw = np.zeros_like(x), np.zeros_like(w)
+        tw = w.reshape(w.shape[0], -1)
+        for Y in range(grad_output.shape[2]):
+            for X in range(grad_output.shape[3]):
+                gg = grad_output[:, :, Y, X]
+                tx = x[:, :, Y:Y+H, X:X+W].reshape(x.shape[0], -1)
+                dx[:, :, Y:Y+H, X:X+W] += gg.dot(tw).reshape(dx.shape[0], dx.shape[1], H, W)
+                dw += gg.T.dot(tx).reshape(dw.shape)
         return dx, dw
 
-    @staticmethod
-    def forward(ctx: Function, x: np.ndarray, w: np.ndarray) -> np.ndarray:
-        ctx.save_for_backward(x, w)
-        return Conv2D.inner_forward(x, w)
-    @staticmethod
-    def backward(ctx: Function, grad_output: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        return Conv2D.inner_backward(grad_output, *ctx.saved_tensors)
+    # @staticmethod
+    # def forward(ctx: Function, x: np.ndarray, w: np.ndarray) -> np.ndarray:
+    #     ctx.save_for_backward(x, w)
+    #     return Conv2D.inner_forward(x, w)
+    # @staticmethod
+    # def backward(ctx: Function, grad_output: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    #     return Conv2D.inner_backward(grad_output, *ctx.saved_tensors)
 
 register('conv2d', Conv2D)
 
