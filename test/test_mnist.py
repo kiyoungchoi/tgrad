@@ -119,18 +119,19 @@ class TestMNIST(unittest.TestCase):
         )
         logger = logging.getLogger(__name__)
 
-        if os.getenv("TRACE") == "1":
-            sys.settrace(trace_calls)
+        # if os.getenv("TRACE") == "1":
+        #     sys.settrace(trace_calls)
 
-        if os.getenv("DEBUG") == "1":
-            pdb.set_trace()  # 디버깅 포인트 설정
+        # if os.getenv("DEBUG") == "1":
+        #     pdb.set_trace()  # 디버깅 포인트 설정
         if os.getenv("CONV") == "1":
             model = TConvNet()
             optim = tgrad_optim.Adam([model.c1, model.l1, model.l2], lr=0.001)
             steps = 400
         else:
             model = TBotNet()
-            optim = tgrad_optim.Adam([model.l1, model.l2], lr=0.001)
+            # optim = tgrad_optim.Adam([model.l1, model.l2], lr=0.001)
+            optim = tgrad_optim.RMSprop([model.l1, model.l2], lr=0.001)
             steps = 1000
 
         # original 
