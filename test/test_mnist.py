@@ -30,13 +30,13 @@ class TBotNet:
 class TConvNet:
     def __init__(self):
         conv = 7
-        self.chans = 4 # characteristics
+        chans = 4 # characteristics
         # (batch_size, cin, H, W) => input 
         # (cout, cin, H, W) => self.c1
-        self.c1 = Tensor(layer_init_uniform(self.chans, 1, conv, conv)) # filter
+        self.c1 = Tensor(layer_init_uniform(chans, 1, conv, conv)) # filter
         # (bs, cout, H, W)
         # self.l1 = Tensor(layer_init_uniform(26*26*self.chans, 128)) # serialize
-        self.l1 = Tensor(layer_init_uniform(((28-conv+1)**2)*self.chans, 128)) # serialize
+        self.l1 = Tensor(layer_init_uniform(((28-conv+1)**2)*chans, 128)) # serialize
         self.l2 = Tensor(layer_init_uniform(128, 10))
 
 
