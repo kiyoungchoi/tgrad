@@ -30,7 +30,8 @@ class TBotNet:
 class TConvNet:
     def __init__(self):
         conv = 7
-        chans = 4 # characteristics
+        # chans = 4 # characteristics
+        chans = 16
         # (batch_size, cin, H, W) => input 
         # (cout, cin, H, W) => self.c1
         self.c1 = Tensor(layer_init_uniform(chans, 1, conv, conv)) # filter
@@ -42,8 +43,18 @@ class TConvNet:
 
     def forward(self, x: Tensor) -> Tensor:
         x.data = x.data.reshape((-1, 1, 28, 28))
-        # x = x.conv2d(self.c1).reshape(Tensor(np.array((-1, 26*26*self.chans)))).relu()
-        x = x.conv2d(self.c1).reshape(Tensor(np.array((x.shape[0], -1)))).relu()
+        # x = x.conv2d(self.c1).relu()
+        # x = x.reshape(Tensor(np.array((x.shape[0], -1))))
+
+        # 합성곱 레이어 적용
+        conv_out = x.conv2d(self.c1)
+        # 배치 차원 유지하며 평탄화 (배치사이즈, -1)
+        reshaped = conv_out.reshape(Tensor(np.array((conv_out.shape[0], -1))))
+        # ReLU 활성화 적용
+        x = reshaped.relu()
+
+        # x = x.conv2d(self.c1).reshape(Tensor(np.array((x.shape[0], -1))))
+        # x = x.relu()
         return x.dot(self.l1).relu().dot(self.l2).logsoftmax()
 
 # if os.getenv("CONV") == "1":
