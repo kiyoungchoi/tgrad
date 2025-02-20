@@ -5,6 +5,12 @@ tinygrad to tgrad
 pip install -e .
 ```
 
+### get started 
+```python
+python test/test_mnist.py
+CONV=1 python test/test_mnist.py
+```
+
 understanding the process 
 
 
