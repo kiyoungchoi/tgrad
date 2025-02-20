@@ -22,6 +22,11 @@ class Tensor:
     def __repr__(self) -> str:
         return f"Tensor {self.data} with grad {self.grad}"
     
+    @property
+    def shape(self):
+        return self.data.shape
+
+    
     def backward(self, allow_fill: bool = True) -> None:
         # # 텐서 생성 example
         # a = Tensor(np.array([2.0]))
